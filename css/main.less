@@ -1,0 +1,77 @@
+/* (c) 2015 Ramis Wachtler */
+/* Imports */
+@import "mixins";
+/* Fonts */
+@import url(http://fonts.googleapis.com/css?family=Titillium+Web:400,600,700);
+@titillium: 'Titillium Web', sans-serif;
+/* Colors */
+@white: #FFFFFF;
+@black: #000000;
+@gray: #555555;
+@slightlyshadow: fade(@black, 20%);
+@lightgray: #777777;
+@lightergray: #EEEEEE;
+
+html, body {
+  height: 100%;
+  font-size: 16px;
+  font-family: @titillium;
+}
+
+nav.navbar-inverse {
+  background: #22A7F0;
+  border-bottom: 0;
+  .box-shadow(@slightlyshadow, 2px, 2px, 4px);
+  .navbar-brand{
+    font-weight: 600;
+    color: @white;
+    .text-shadow(@slightlyshadow, 1px, 1px, 2px);
+  }
+  .navbar-toggle{
+    border-color: transparent;
+    background: transparent;
+    .transform(rotate(0));
+    .transition(all, .5s);
+    &:focus, &:hover{
+      background: transparent;
+    }
+    &.rotate{
+      .transform(rotate(90deg));
+    }
+  }
+  ul.navbar-nav{
+    &>li{
+      &>a{
+        color: @white;
+        .no-boxshadow;
+        .text-shadow(@slightlyshadow, 1px, 1px, 2px);
+
+      }
+      &.active, &:hover{
+        &>a{
+          &:hover{
+            background: @white;
+            color: @black;
+          }
+          background: @white;
+          color: @black;
+          .no-boxshadow;
+        }
+      }
+    }
+  }
+}
+div{
+  &#navbar{
+    border-color: @white;
+  }
+  &#content{
+    width: 100%;
+    margin-top: 50px;
+
+    .tooltip{
+      opacity: 1.0;
+    }
+  }
+}
+

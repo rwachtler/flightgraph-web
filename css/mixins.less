@@ -1,0 +1,31 @@
+/* (c) 2015 Ramis Wachtler */
+
+.text-shadow (@color: #000,@offsetX: 1px, @offsetY: 1px, @blurRadius: 2px) {
+  text-shadow: @color @offsetX @offsetY @blurRadius;
+}
+.box-shadow (@color: #000, @offsetX: 1px, @offsetY: 1px, @blurRadius: 2px) {
+  -webkit-box-shadow:  @offsetX @offsetY @blurRadius @color;
+  -moz-box-shadow:  @offsetX @offsetY @blurRadius @color;
+  box-shadow:  @offsetX @offsetY @blurRadius @color;
+}
+.transition(@property: all, @duration: .8s){
+  -webkit-transition: @property @duration;
+  -moz-transition: @property @duration;
+  -ms-transition: @property @duration;
+  -o-transition: @property @duration;
+  transition: @property @duration;
+}
+.transform(@string){
+  -webkit-transform: @string;
+  -moz-transform: @string;
+  -ms-transform: @string;
+  -o-transform: @string;
+  transform: @string;
+}
+
+/* Resets */
+.no-boxshadow{
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}

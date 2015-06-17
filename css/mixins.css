@@ -1,0 +1,7 @@
+/* (c) 2015 Ramis Wachtler */
+/* Resets */
+.no-boxshadow {
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
