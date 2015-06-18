@@ -172,20 +172,22 @@ function addpoint(lat,lon,type,text) {
     var x = projection([lat,lon])[0];
     var y = projection([lat,lon])[1];
     var gpoint = g.append("g").attr("class", "gpoint");
-
+    var pointRadius = 0;
     var color = "";
     if(type == "user"){
         color = "#22a7f0";
+        pointRadius = 2;
     }
     else{
         color = "red";
+        pointRadius = 0.5;
     }
 
     gpoint.append("svg:circle")
         .attr("cx", x)
         .attr("cy", y)
         .attr("class","point")
-        .attr("r", 2)
+        .attr("r", pointRadius)
         .style("fill", color);
 
     //conditional in case a point has no associated text
@@ -196,14 +198,31 @@ function addpoint(lat,lon,type,text) {
 }
 
 function setupAirports(){
-    d3.json("data/airports.topo.json", function(error, airport) {
-        var airports = topojson.feature(airport, airport.objects.airports).features;
-        //airportTopo = airports;
-        airports.forEach(function(airport){
-            //console.log("0: " + airport.geometry.coordinates[0] + " 1: "+airport.geometry.coordinates[1])
-            addpoint(airport.geometry.coordinates[0], airport.geometry.coordinates[1], "airport", "");
+    $.getJSON("http://localhost:8080/flightgraph/rest/airports", function(){})
+        .done(function(airports){
+            /*d3.json("", function(error, airport) {
+                var airports = topojson.feature(airport, airport.objects.airports).features;
+                //airportTopo = airports;
+
+                for(var i = 0; i < 2; i++){
+                    console.log(data);
+                }
+                /*airports.forEach(function(airport){
+                 //console.log("0: " + airport.geometry.coordinates[0] + " 1: "+airport.geometry.coordinates[1])
+                 //addpoint(airport.geometry.coordinates[0], airport.geometry.coordinates[1], "airport", "");
+                 });*/
+            //});
+
+            airports.forEach(function(airport){
+                //console.log("0: " + airport.geometry.coordinates[0] + " 1: "+airport.geometry.coordinates[1])
+                addpoint(airport.lon, airport.lat, "airport", "");
+            });
+        })
+        .fail(function( jqxhr, textStatus, error ) {
+            var err = textStatus + ", " + error;
+            console.log( "Request Failed: " + err );
         });
-    });
+
 }
 
 function success(pos) {
