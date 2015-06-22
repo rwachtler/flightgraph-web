@@ -1,0 +1,20 @@
+CACHE MANIFEST
+#Version 1.
+
+CACHE:
+fonts/glyphicons-halflings-regular.eot
+fonts/glyphicons-halflings-regular.svg
+fonts/glyphicons-halflings-regular.ttf
+fonts/glyphicons-halflings-regular.woff
+css/bootstrap.min.css
+css/bootstrap-theme.min.css
+css/main.min.css
+css/mixins.min.css
+data/airports.topo.json
+data/world-topo-min.json
+img/mario_kurzweil.jpg
+img/michael_stifter.jpg
+img/ramis_wachtler.jpg
+
+NETWORK:
+*

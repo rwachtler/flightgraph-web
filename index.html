@@ -1,4 +1,4 @@
-<!doctype html>
+<html manifest="manifest.appcache">
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
@@ -15,6 +15,14 @@
         <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
     </head>
     <body>
+    <div id="legend">
+        <ul>
+            <li class="plane-legend"><div class="circle"></div> Plane</li>
+            <li class="airport"><div class="circle"></div> Airport</li>
+            <li class="you"><div class="circle"></div> You</li>
+            <li class="selected-plane"><div class="circle"></div> Selected plane</li>
+        </ul>
+    </div>
         <div class="spinner">
             <div class="inner-spinner"></div>
         </div>
@@ -36,7 +44,6 @@
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
                 <li class="active"><a href="/">Worldmap</a></li>
-                <li><a href="pages/planes.html">Planes</a></li>
                 <li><a href="pages/favourites.html">Favourites</a></li>
                 <li><a href="pages/about.html">About</a></li>
             </ul>
@@ -49,7 +56,7 @@
       </div>
     </nav>
 
-    <div id="content" class="">
+    <div id="content" class="map">
       <!-- Example row of columns -->
     </div> <!-- /container -->
         <div class="modal fade" id="objectModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">

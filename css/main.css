@@ -132,6 +132,39 @@ nav.navbar-inverse ul.navbar-nav > li:hover > a:hover {
 nav.navbar-inverse form.navbar-form {
   border-color: #ffffff;
 }
+div#legend {
+  background: #ffffff;
+  position: absolute;
+  top: 50px;
+  right: 0;
+}
+div#legend ul {
+  padding: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+div#legend ul li {
+  padding: 5px;
+  display: inline-block;
+}
+div#legend ul li.plane-legend > div {
+  background: #f7ca18;
+}
+div#legend ul li.airport > div {
+  background: #cf000f;
+}
+div#legend ul li.you > div {
+  background: #22a7f0;
+}
+div#legend ul li.selected-plane > div {
+  background: #000000;
+}
+div#legend ul li > div.circle {
+  height: 10px;
+  width: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
 div#navbar {
   border-color: #ffffff;
 }
@@ -139,10 +172,12 @@ div .row.heading {
   margin-bottom: 20px;
 }
 div#content {
-  width: 100%;
   margin-top: 50px;
 }
-div#content .tooltip {
+div#content.map {
+  width: 100%;
+}
+div#content.map .tooltip {
   opacity: 1.0;
 }
 div.people > div {
@@ -152,6 +187,26 @@ div.people div.panel-heading {
   background: #777777;
   text-align: center;
   color: #ffffff;
+}
+div.people div.panel-heading div.member-image {
+  width: 100px;
+  height: 100px;
+  text-align: center;
+  margin: 0 auto;
+  border-radius: 50%;
+  margin-bottom: 15px;
+}
+div.people div.panel-heading div.member-image.michael {
+  background: url(../img/michael_stifter.jpg) 50% 0;
+  background-size: cover;
+}
+div.people div.panel-heading div.member-image.mario {
+  background: url(../img/mario_kurzweil.jpg) 50% 0;
+  background-size: cover;
+}
+div.people div.panel-heading div.member-image.ramis {
+  background: url(../img/ramis_wachtler.jpg) 50% 0;
+  background-size: cover;
 }
 div.people div.panel-body {
   background: #eeeeee;

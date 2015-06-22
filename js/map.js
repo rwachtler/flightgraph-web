@@ -14,7 +14,18 @@ var width = window.screen.width;
 var height = window.screen.height;
 var worldMapTopo,airportTopo,projection,path,svg,g;
 var scale = 0;
+var planeCallsignArray = [];
 var planeArray = [];
+var airportArray = [];
+var favouritesArray = [];
+var callsigns = [];
+//localStorage.clear();
+if(localStorage.getItem("favourites") == null){
+    localStorage.setItem("favourites", JSON.stringify(favouritesArray));
+} else{
+    favouritesArray = JSON.parse(localStorage.getItem("favourites"));
+
+}
 if(isMobile){
     scale = 2000;
 }
@@ -194,7 +205,7 @@ function addpoint(lat,lon,type) {
     }
 }
 
-function addPlane(lat,lon, callsign, speed, altitude) {
+function addPlane(lat,lon, callsign, speed, altitude, departureAirportCode, arrivalAirportCode, delay, arrivalLocal, departureLocal) {
 
     var x = projection([lat,lon])[0];
     var y = projection([lat,lon])[1];
@@ -213,6 +224,11 @@ function addPlane(lat,lon, callsign, speed, altitude) {
                 .attr("data-callsign", callsign)
                 .attr("data-speed", speed)
                 .attr("data-altitude", altitude)
+                .attr("data-departureAirportCode", departureAirportCode)
+                .attr("data-arrivalAirportCode", arrivalAirportCode)
+                .attr("data-delay", delay)
+                .attr("data-arrivalLocal", arrivalLocal)
+                .attr("data-departureLocal", departureLocal)
                 .attr("onclick", "flightClick(event)")
                 .style("fill", "#000000");
         }
@@ -225,6 +241,11 @@ function addPlane(lat,lon, callsign, speed, altitude) {
                 .attr("data-callsign", callsign)
                 .attr("data-speed", speed)
                 .attr("data-altitude", altitude)
+                .attr("data-departureAirportCode", departureAirportCode)
+                .attr("data-arrivalAirportCode", arrivalAirportCode)
+                .attr("data-delay", delay)
+                .attr("data-arrivalLocal", arrivalLocal)
+                .attr("data-departureLocal", departureLocal)
                 .attr("onclick", "flightClick(evt)")
                 .style("fill", "#F7CA18");
         }
@@ -260,8 +281,8 @@ function setupAirports(){
     $.getJSON("data/airports.topo.json", function(){})
         .done(function(airports){
             airports = airports.objects.airports;
+            airportArray = airports;
             airports.forEach(function(airport){
-                //console.log("0: " + airport.geometry.coordinates[0] + " 1: "+airport.geometry.coordinates[1])
                 addAirport(airport.lon, airport.lat, airport.name, airport.iata, airport.size);
             });
         })
@@ -278,8 +299,8 @@ function loadLiveFlights(){
             planes = planes.data;
             planes.forEach(function(plane){
                 //drawPlane(plane.lon, plane.lat);
-                addPlane(plane.lon, plane.lat, plane.callsign, plane.speed, plane.altitude);
-                planeArray.push(plane.callsign);
+                addPlane(plane.lon, plane.lat, plane.callsign, plane.speed, plane.altitude, plane.departureAirportCode, plane.arrivalAirportCode, plane.delay, plane.arrivalLocal, plane.departureLocal);
+                planeCallsignArray.push(plane.callsign);
             });
         })
         .fail(function( jqxhr, textStatus, error ) {
@@ -306,6 +327,26 @@ setInterval(function(){
     loadLiveFlights();
 }, 20000);
 
+function manageFavourite(callsign){
+
+    var curPlane = $.grep(favouritesArray, function(e){return e.callsign == callsign});
+    if(favouritesArray.indexOf(callsign) < 0){
+        favouritesArray.push(callsign);
+        $(".actionButton").addClass("btn-danger");
+        $(".actionButton").text("Remove from favourites");
+        $(".actionButton").removeClass("btn-success");
+    } else{
+        favouritesArray = jQuery.grep(favouritesArray, function(value) {
+            return value != callsign;
+        });
+        $(".actionButton").addClass("btn-success");
+        $(".actionButton").text("Add to favourites");
+        $(".actionButton").removeClass("btn-danger");
+    }
+
+    localStorage.setItem("favourites", JSON.stringify(favouritesArray));
+}
+
 function flightClick(event){
     if(event.target.id != ""){
         var selectedPlane = document.getElementById(event.target.id);
@@ -314,7 +355,19 @@ function flightClick(event){
         var speedKMH = (speedKT * 1.85200).toFixed(2);
         var altitudeFT = selectedPlane.getAttribute("data-altitude");
         var altitudeKM = (altitudeFT / 3048).toFixed(2);
+        var departureAirport = selectedPlane.getAttribute("data-departureAirportCode");
+        var arrivalAirport = selectedPlane.getAttribute("data-arrivalAirportCode");
+        var delay = selectedPlane.getAttribute("data-delay");
+        var arrivalLocal = selectedPlane.getAttribute("data-arrivalLocal");
+        var departureLocal = selectedPlane.getAttribute("data-departureLocal");
+
         $("#modalLabel").text(callsign);
+
+        arrivalLocal = arrivalLocal.substr(11, 5);
+        departureLocal = departureLocal.substr(11, 5);
+
+        arrivalAirport = $.grep(airportArray, function(e){return e.iata == arrivalAirport});
+        departureAirport = $.grep(airportArray, function(e){return e.iata == departureAirport});
         $(".modal-body").html('' +
         '<dl class="dl-horizontal">' +
             '<dt>Speed (kt)</dt>' +
@@ -325,8 +378,37 @@ function flightClick(event){
                 '<dd>'+altitudeFT+'</dd>' +
             '<dt>Altitude (km)</dt>' +
                 '<dd>'+altitudeKM+'</dd>' +
+            '<dt>Departure airport</dt>' +
+                '<dd>'+departureAirport[0].name+'</dd>' +
+            '<dt>Arrival airport</dt>' +
+                '<dd>'+arrivalAirport[0].name+'</dd>' +
+            '<dt>Departure</dt>' +
+                '<dd>'+departureLocal+'</dd>' +
+            '<dt>Arrival</dt>' +
+                '<dd>'+arrivalLocal+'</dd>' +
+            '<dt>Delay</dt>' +
+                '<dd>'+delay+' min.</dd>' +
         '</dl>');
-        $("#objectModal").modal('show');
+
+        var planeObject = {};
+        planeObject["callsign"] = callsign;
+        planeObject["speed"] = speedKMH;
+        planeObject["altitude"] = altitudeKM;
+        planeObject["departureAirport"] = departureAirport[0].name;
+        planeObject["arrivalAirport"] = arrivalAirport[0].name;
+        planeObject["departureLocal"] = departureLocal;
+        planeObject["arrivalLocal"] = arrivalLocal;
+        planeObject["delay"] = delay;
+
+        planeArray.push(planeObject);
+        localStorage.setItem("planes",JSON.stringify(planeArray));
+        $(".actionButton").remove();
+        if(favouritesArray.indexOf(callsign) < 0){
+            $(".modal-footer").append('<button onclick="manageFavourite(\''+callsign+'\')" type="button" class="actionButton btn btn-success">Add to favourites</button>');
+        } else {
+            $(".modal-footer").append('<button onclick="manageFavourite(\''+callsign+'\')" type="button" class="actionButton btn btn-danger">Remove from favourites</button>');
+        }
+            $("#objectModal").modal('show');
     }
     return false;
 }
@@ -338,6 +420,7 @@ function airportClick(event){
         var name = selectedAirport.getAttribute("data-name");
         var iata = selectedAirport.getAttribute("data-iata");
         var size = selectedAirport.getAttribute("data-size");
+        $(".actionButton").remove();
         $("#modalLabel").text(name);
         $(".modal-body").html('' +
         '<dl class="dl-horizontal">' +
@@ -353,11 +436,13 @@ function airportClick(event){
     return false;
 }
 
+
+
 function zoomPlane(plane) {
     var x = plane.attr("cx");
     var y = plane.attr("cy");
 
-    var scale = 40;
+    var scale = 5;
 
     svg.transition().duration(3000)
         .call(zoom.translate([((x * -scale) + (width / 2)), ((y * -scale) + height / 2)])
@@ -395,7 +480,7 @@ $('.typeahead').typeahead({
     },
     {
         name: 'planeBH',
-        source: substringMatcher(planeArray)
+        source: substringMatcher(planeCallsignArray)
     });
 
 $('.typeahead').bind('typeahead:select', function(ev, planeID) {
