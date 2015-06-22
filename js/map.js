@@ -363,7 +363,20 @@ $('.typeahead').bind('typeahead:select', function(ev, planeID) {
     document.cookie = "selectedFlight="+planeID;
     zoomPlane(selectedFlight);
 });
-
+$('.typeahead').keypress(function(e){
+   if(e.which == 13){
+       var oldFlight = d3.select(document.getElementById(getCookieByName("selectedFlight")));
+       oldFlight.attr("class","");
+       var planeID = $(this).val();
+       var selectedFlight = d3.select(document.getElementById(planeID));
+       selectedFlight.attr("class","selected");
+       document.cookie = "selectedFlight="+planeID;
+       zoomPlane(selectedFlight);
+   }
+});
+$('.typeahead').click(function(){
+   $(this).val('');
+});
 /* Cookies getter */
 function getCookieByName(name) {
     if (!name) { return null; }
