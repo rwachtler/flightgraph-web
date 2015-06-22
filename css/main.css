@@ -135,6 +135,9 @@ nav.navbar-inverse form.navbar-form {
 div#navbar {
   border-color: #ffffff;
 }
+div .row.heading {
+  margin-bottom: 20px;
+}
 div#content {
   width: 100%;
   margin-top: 50px;

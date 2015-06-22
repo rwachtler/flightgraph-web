@@ -1,6 +1,8 @@
 /**
  * Created by rwachtler on 17.06.15.
  */
+
+
 $("body").addClass("overlay");
 var isMobile = false; //initiate as false
 // device detection
@@ -17,7 +19,7 @@ if(isMobile){
     scale = 2000;
 }
 else{
-    scale = width / 2 / Math.PI;
+    scale = 3000;
 }
 var coordinates;
 var zoom = d3.behavior.zoom()
@@ -46,7 +48,7 @@ function setup(width,height){
 
     svg = d3.select("#content").append("svg")
         .attr("width", width)
-        .attr("height", height)
+        .attr("height", window.screen.height)
         .call(zoom)
         .on("click", click)
         .append("g");
@@ -174,15 +176,9 @@ function addpoint(lat,lon,type) {
 
     var x = projection([lat,lon])[0];
     var y = projection([lat,lon])[1];
-    var color = "";
-    if(type == "user"){
-        color = "#22a7f0";
-    }
-    else if(type == "airport"){
-        color = "#CF000F";
-    }
+    var color = "#22a7f0";
 
-    var rad = 0.5;
+    var rad = 4.0;
     if(isMobile){
         rad = 5.0;
     }
@@ -202,7 +198,7 @@ function addPlane(lat,lon, callsign, speed, altitude) {
 
     var x = projection([lat,lon])[0];
     var y = projection([lat,lon])[1];
-    var rad = 0.4;
+    var rad = 4.0;
     if(isMobile){
         rad = 5.0;
     }
@@ -229,20 +225,44 @@ function addPlane(lat,lon, callsign, speed, altitude) {
                 .attr("data-callsign", callsign)
                 .attr("data-speed", speed)
                 .attr("data-altitude", altitude)
-                .attr("onclick", "flightClick(event)")
+                .attr("onclick", "flightClick(evt)")
                 .style("fill", "#F7CA18");
         }
 
     }
 }
 
+function addAirport(lat,lon, name, iata, size) {
+
+    var x = projection([lat,lon])[0];
+    var y = projection([lat,lon])[1];
+    var rad = 4.0;
+    if(isMobile){
+        rad = 5.0;
+    }
+    if(x > 0 || y > 0){
+        var gpoint = g.append("svg").attr("class","airport");
+            gpoint.append("svg:circle")
+                .attr("cx", x)
+                .attr("cy", y)
+                .attr("id", iata)
+                .attr("r", rad)
+                .attr("data-name", name)
+                .attr("data-iata", iata)
+                .attr("data-size", size)
+                .attr("onclick", "airportClick(evt)")
+                .style("fill", "#CF000F");
+    }
+}
+
 
 function setupAirports(){
-    $.getJSON("http://localhost:8080/flightgraph/rest/airports", function(){})
+    $.getJSON("data/airports.topo.json", function(){})
         .done(function(airports){
+            airports = airports.objects.airports;
             airports.forEach(function(airport){
                 //console.log("0: " + airport.geometry.coordinates[0] + " 1: "+airport.geometry.coordinates[1])
-                addpoint(airport.lon, airport.lat, "airport", "");
+                addAirport(airport.lon, airport.lat, airport.name, airport.iata, airport.size);
             });
         })
         .fail(function( jqxhr, textStatus, error ) {
@@ -306,8 +326,31 @@ function flightClick(event){
             '<dt>Altitude (km)</dt>' +
                 '<dd>'+altitudeKM+'</dd>' +
         '</dl>');
-        $("#planeModal").modal('show');
+        $("#objectModal").modal('show');
     }
+    return false;
+}
+
+function airportClick(event){
+    event = event || window.event;
+    if(event.target.id != ""){
+        var selectedAirport = document.getElementById(event.target.id);
+        var name = selectedAirport.getAttribute("data-name");
+        var iata = selectedAirport.getAttribute("data-iata");
+        var size = selectedAirport.getAttribute("data-size");
+        $("#modalLabel").text(name);
+        $(".modal-body").html('' +
+        '<dl class="dl-horizontal">' +
+        '<dt>Name</dt>' +
+        '<dd>'+name+'</dd>' +
+        '<dt>IATA</dt>' +
+        '<dd>'+iata+'</dd>' +
+        '<dt>Size</dt>' +
+        '<dd>'+size+'</dd>' +
+        '</dl>');
+        $("#objectModal").modal('show');
+    }
+    return false;
 }
 
 function zoomPlane(plane) {
