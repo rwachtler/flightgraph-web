@@ -12,6 +12,7 @@ var width = window.screen.width;
 var height = window.screen.height;
 var worldMapTopo,airportTopo,projection,path,svg,g;
 var scale = 0;
+var planeArray = [];
 if(isMobile){
     scale = 2000;
 }
@@ -110,7 +111,7 @@ function draw(topo) {
         });
     var userPositionText = "You're here!";
     addpoint(coordinates.longitude, coordinates.latitude,"user",userPositionText);
-    //setupAirports();
+    setupAirports();
 
     loadLiveFlights();
 }
@@ -199,7 +200,6 @@ function addpoint(lat,lon,type) {
 
 function addPlane(lat,lon, callsign, speed, altitude) {
 
-
     var x = projection([lat,lon])[0];
     var y = projection([lat,lon])[1];
     var rad = 0.4;
@@ -208,16 +208,31 @@ function addPlane(lat,lon, callsign, speed, altitude) {
     }
     if(x > 0 || y > 0){
         var gpoint = g.append("svg").attr("class","plane");
-        gpoint.append("svg:circle")
-            .attr("cx", x)
-            .attr("cy", y)
-            .attr("id", callsign)
-            .attr("r", rad)
-            .attr("data-callsign", callsign)
-            .attr("data-speed", speed)
-            .attr("data-altitude", altitude)
-            .attr("onclick", "flightClick(event)")
-            .style("fill", "#F7CA18");
+        if(callsign == getCookieByName("selectedFlight")){
+            gpoint.append("svg:circle")
+                .attr("cx", x)
+                .attr("cy", y)
+                .attr("id", callsign)
+                .attr("r", rad)
+                .attr("data-callsign", callsign)
+                .attr("data-speed", speed)
+                .attr("data-altitude", altitude)
+                .attr("onclick", "flightClick(event)")
+                .style("fill", "#000000");
+        }
+        else{
+            gpoint.append("svg:circle")
+                .attr("cx", x)
+                .attr("cy", y)
+                .attr("id", callsign)
+                .attr("r", rad)
+                .attr("data-callsign", callsign)
+                .attr("data-speed", speed)
+                .attr("data-altitude", altitude)
+                .attr("onclick", "flightClick(event)")
+                .style("fill", "#F7CA18");
+        }
+
     }
 }
 
@@ -241,10 +256,10 @@ function loadLiveFlights(){
     $.getJSON("http://localhost:8080/flightgraph/rest/flights/area/49.05/12.5/46.35/17.226", function(){})
         .done(function(planes){
             planes = planes.data;
-
             planes.forEach(function(plane){
                 //drawPlane(plane.lon, plane.lat);
                 addPlane(plane.lon, plane.lat, plane.callsign, plane.speed, plane.altitude);
+                planeArray.push(plane.callsign);
             });
         })
         .fail(function( jqxhr, textStatus, error ) {
@@ -253,17 +268,6 @@ function loadLiveFlights(){
         });
 }
 
-function drawPlane(lat, lon){
-    var plane = g.append("g").attr("class", "plane");
-    var x = projection([lat,lon])[0];
-    var y = projection([lat,lon])[1];
-    var planeContainer = svg.append("svg")
-        .attr("x", x-20)
-        .attr("y", y-20);
-    var plane = planeContainer.append("path")
-        .attr("class", "plane")
-        .attr("d", "m25.21488,3.93375c-0.44355,0 -0.84275,0.18332 -1.17933,0.51592c-0.33397,0.33267 -0.61055,0.80884 -0.84275,1.40377c-0.45922,1.18911 -0.74362,2.85964 -0.89755,4.86085c-0.15655,1.99729 -0.18263,4.32223 -0.11741,6.81118c-5.51835,2.26427 -16.7116,6.93857 -17.60916,7.98223c-1.19759,1.38937 -0.81143,2.98095 -0.32874,4.03902l18.39971,-3.74549c0.38616,4.88048 0.94192,9.7138 1.42461,13.50099c-1.80032,0.52703 -5.1609,1.56679 -5.85232,2.21255c-0.95496,0.88711 -0.95496,3.75718 -0.95496,3.75718l7.53,-0.61316c0.17743,1.23545 0.28701,1.95767 0.28701,1.95767l0.01304,0.06557l0.06002,0l0.13829,0l0.0574,0l0.01043,-0.06557c0,0 0.11218,-0.72222 0.28961,-1.95767l7.53164,0.61316c0,0 0,-2.87006 -0.95496,-3.75718c-0.69044,-0.64577 -4.05363,-1.68813 -5.85133,-2.21516c0.48009,-3.77545 1.03061,-8.58921 1.42198,-13.45404l18.18207,3.70115c0.48009,-1.05806 0.86881,-2.64965 -0.32617,-4.03902c-0.88969,-1.03062 -11.81147,-5.60054 -17.39409,-7.89352c0.06524,-2.52287 0.04175,-4.88024 -0.1148,-6.89989l0,-0.00476c-0.15655,-1.99844 -0.44094,-3.6683 -0.90277,-4.8561c-0.22699,-0.59493 -0.50356,-1.07111 -0.83754,-1.40377c-0.33658,-0.3326 -0.73578,-0.51592 -1.18194,-0.51592l0,0l-0.00001,0l0,0z");
-    }
 
 function success(pos) {
     coordinates = pos.coords;
@@ -304,4 +308,64 @@ function flightClick(event){
         '</dl>');
         $("#planeModal").modal('show');
     }
+}
+
+function zoomPlane(plane) {
+    var x = plane.attr("cx");
+    var y = plane.attr("cy");
+
+    var scale = 40;
+
+    svg.transition().duration(3000)
+        .call(zoom.translate([((x * -scale) + (width / 2)), ((y * -scale) + height / 2)])
+            .scale(scale).event);
+
+}
+/* Typeahead methods*/
+
+var substringMatcher = function(strs) {
+    return function findMatches(q, cb) {
+        var matches, substringRegex;
+
+        // an array that will be populated with substring matches
+        matches = [];
+
+        // regex used to determine if a string contains the substring `q`
+        substrRegex = new RegExp(q, 'i');
+
+        // iterate through the pool of strings and for any string that
+        // contains the substring `q`, add it to the `matches` array
+        $.each(strs, function(i, str) {
+            if (substrRegex.test(str)) {
+                matches.push(str);
+            }
+        });
+
+        cb(matches);
+    };
+};
+
+$('.typeahead').typeahead({
+        hint: true,
+        highlight: true,
+        minLength: 1
+    },
+    {
+        name: 'planeBH',
+        source: substringMatcher(planeArray)
+    });
+
+$('.typeahead').bind('typeahead:select', function(ev, planeID) {
+    var oldFlight = d3.select(document.getElementById(getCookieByName("selectedFlight")));
+    oldFlight.attr("class","");
+    var selectedFlight = d3.select(document.getElementById(planeID));
+    selectedFlight.attr("class","selected");
+    document.cookie = "selectedFlight="+planeID;
+    zoomPlane(selectedFlight);
+});
+
+/* Cookies getter */
+function getCookieByName(name) {
+    if (!name) { return null; }
+    return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(name).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
 }
